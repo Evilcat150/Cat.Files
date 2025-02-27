@@ -14,7 +14,7 @@ $Localnetwork = $Argsarray[1];
 
 $TeamNumber = "7";
 $JumpIP = "10.$TeamNumber.1.1";
-$IpAddress = "192.168.$TeamNumber.1" #(Get-NetIPAddress |Where-Object {$_.AddressState -eq 'Preferred' -and $_.ValidLifetime -lt '24:00:00'}).IPAddress
+$IpAddress = (Get-NetIPAddress |Where-Object {$_.AddressState -eq 'Preferred' -and $_.ValidLifetime -lt '24:00:00'}).IPAddress
 
 netsh advfirewal export "C:\Firewall.wfw"
 
