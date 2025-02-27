@@ -1,4 +1,4 @@
-﻿param(
+param(
 [String]$ScriptArgs = @("")
 )
 $ErrorActionPreference = "SilentlyContinue"
@@ -14,7 +14,7 @@ $Localnetwork = $Argsarray[1];
 
 $TeamNumber = "7";
 $JumpIP = "10.$TeamNumber.1.1";
-$IpAddress = (Get-NetIPAddress |Where-Object {$_.AddressState -eq 'Preferred' -and $_.ValidLifetime -lt '24:00:00'}).IPAddress
+$IpAddress = "192.168.$TeamNumber.1" #(Get-NetIPAddress |Where-Object {$_.AddressState -eq 'Preferred' -and $_.ValidLifetime -lt '24:00:00'}).IPAddress
 
 netsh advfirewal export "C:\Firewall.wfw"
 
@@ -87,29 +87,30 @@ else{
 
 
     New-NetFirewallRule -DisplayName "WinRM" -Direction Inbound -Protocol TCP -LocalPort 80,5985,5986 -RemoteAddress $Dispatcher
+    New-NetFirewallRule -DisplayName "Datadog" -Direction Outbound  -Program "C:\Program Files\Datadog Agent\bin\agent.exe"
 
 
     # Domain Controller
-    if($IpAddress == "10.$TeamNumber.1.1"){
+    if($IpAddress -eq "10.$TeamNumber.1.1"){
         New-NetFirewallRule -DisplayName "Local10DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe" -RemoteAddress "10.$TeamNumber.1.0/24"
         New-NetFirewallRule -DisplayName "Local192DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe" -RemoteAddress "192.168.$TeamNumber.0/24"
         New-NetFirewallRule  -DisplayName "Remote Desktop" -Direction Inbound -Protocol TCP -LocalPort 3389 -RemoteAddress $JumpIP
     }
 
     # HTTPS server
-    if($IpAddress == "10.$TeamNumber.1.2"){
+    if($IpAddress -eq "10.$TeamNumber.1.2"){
         New-NetFirewallRule -DisplayName "HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Program "C:\nginx\nginx.exe"
         New-NetFirewallRule  -DisplayName "Remote Desktop" -Direction Inbound -Protocol TCP -LocalPort 3389 -RemoteAddress $JumpIP
     }
     
     # WINRM Box
-    if($IpAddress == "10.$TeamNumber.1.3"){
+    if($IpAddress -eq "10.$TeamNumber.1.3"){
         New-NetFirewallRule -DisplayName "WinRM" -Direction Inbound -Protocol TCP -LocalPort 80,5985,5986
         New-NetFirewallRule  -DisplayName "Remote Desktop" -Direction Inbound -Protocol TCP -LocalPort 3389 -RemoteAddress $JumpIP
     }
 
 
-    if($IpAddress == "192.168.$TeamNumber.1"){
+    if($IpAddress -eq "192.168.$TeamNumber.1"){
         New-NetFirewallRule -DisplayName "HTTP" -Direction Inbound -Protocol TCP -LocalPort 80
         New-NetFirewallRule  -DisplayName "Remote Desktop" -Direction Inbound -Protocol TCP -LocalPort 3389 -RemoteAddress $JumpIP
     }
