@@ -87,15 +87,11 @@ else{
 
 
     New-NetFirewallRule -DisplayName "WinRM" -Direction Inbound -Protocol TCP -LocalPort 80,5985,5986 -RemoteAddress $Dispatcher
-<<<<<<< Updated upstream
     New-NetFirewallRule -DisplayName "Datadog" -Direction Outbound  -Program "C:\Program Files\Datadog Agent\bin\agent.exe"
     New-NetFirewallRule  -DisplayName "Remote Desktop" -Direction Inbound -Protocol TCP -LocalPort 3389 -RemoteAddress $JumpIP
 
 
-=======
-    New-NetFirewallRule -DisplayName "DataDog" -Direction Inbound -Protocol TCP -Program "C:\Program Files\Datadog\Datadog Agent\bin\agent.exe"
-    
->>>>>>> Stashed changes
+
     # Domain Controller
     if($IpAddress -eq "10.$TeamNumber.1.1"){
         New-NetFirewallRule -DisplayName "Local10DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe" -RemoteAddress "10.$TeamNumber.1.0/24"
