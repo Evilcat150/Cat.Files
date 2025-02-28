@@ -36,20 +36,37 @@ if(-not(Get-Command -Name New-NetFirewallRule -ErrorAction SilentlyContinue) -or
     cmd.exe /c "netsh advfirewall set allprofiles firewallpolicy blockinbound,blockoutbound"
 
 
-    netsh advfirewall firewall delete rule name=all
+    netsh advfirewall firewall delete rule name=all 
 
     netsh advfirewall firewall add rule name="WINRM 80" dir=in protocol=TCP localport=80 remoteip=$Dispatcher action=allow
     netsh advfirewall firewall add rule name="WINRM 5985" dir=in protocol=TCP localport=5985 remoteip=$Dispatcher action=allow
     netsh advfirewall firewall add rule name="WINRM 5986" dir=in protocol=TCP localport=5986 remoteip=$Dispatcher action=allow
 
-    netsh advfirewall firewall add rule name="Remote Desktop" dir=in protocol=TCP localport=3389 remoteip=$Dispatcher action=allow
+    netsh advfirewall firewall add rule name="Datadog" dir=in protocol=TCP Program="C:\Program Files\Datadog Agent\bin\agent.exe" action=allow
 
-    netsh advfirewall firewall add rule name="Local Network" dir=in protocol=TCP  remoteip=$Localnetwork action=allow
-    netsh advfirewall firewall add rule name="Local Network" dir=out protocol=TCP  remoteip=$Localnetwork action=allow
+    #netsh advfirewall firewall add rule name="Local Network" dir=in protocol=TCP  remoteip=$Localnetwork action=allow
+    #netsh advfirewall firewall add rule name="Local Network" dir=out protocol=TCP  remoteip=$Localnetwork action=allow
 
-    if($Notnats -ne "NOTNATS"){
-        netsh advfirewall firewall add rule name="NotNats" dir=in protocol=any remoteip=$Notnats action=allow
-        netsh advfirewall firewall add rule name="NotNats" dir=out protocol=any remoteip=$Notnats action=allow
+    # Domain Controller
+
+
+    # HTTPS Server
+    if($IpAddress -eq "10.7.1.2"){
+        netsh advfirewall firewall add rule name="HTTPS" dir=in protocol=TCP localport=443 Program="C:\nginx\nginx.exe" action=allow
+        netsh advfirewall firewall add rule name="LDAP" dir=in protocol=TCP localport=636 action=allow
+    }
+
+    # WINRM
+    if($IpAddress -eq "10.7.1.3"){
+        netsh advfirewall firewall add rule name="WINRM 80" dir=in protocol=TCP localport=80 action=allow
+        netsh advfirewall firewall add rule name="WINRM 5985" dir=in protocol=TCP localport=5985 action=allow
+        netsh advfirewall firewall add rule name="WINRM 5986" dir=in protocol=TCP localport=5986 action=allow            
+    }
+
+    
+    if($IpAddress -eq "192.168.7.1"){
+        netsh advfirewall firewall add rule name="HTTP" dir=in protocol=TCP localport=80 action=allow 
+        
     }
 
     netsh advfirewall set allprofiles state on
@@ -92,9 +109,8 @@ else{
 
     # Domain Controller
     if($IpAddress -eq "10.7.1.1"){
-        New-NetFirewallRule -DisplayName "Local10DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe" -RemoteAddress "10.7.1.0/24"
-        New-NetFirewallRule -DisplayName "Local192DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe" -RemoteAddress "192.168.7.0/24"
-       
+        New-NetFirewallRule -DisplayName "DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe"
+        New-NetFirewallRule -DisplayName "LDAP" -Direction Inbound -Protocol TCP -LocalPort 636 
     }
 
     # HTTPS server
