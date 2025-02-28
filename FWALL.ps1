@@ -5,15 +5,13 @@ $ErrorActionPreference = "SilentlyContinue"
 
 
 $Argsarray = $ScriptArgs -Split ";"
-if($Argsarray.Count -lt 2){
-    Write-Host "Needs 2 arguments"
+if($Argsarray.Count -lt 1){
+    Write-Host "Dispatcher Required"
     break
 }
 $Dispatcher = $Argsarray[0]; 
-$Localnetwork = $Argsarray[1];
 
-$TeamNumber = "7";
-$JumpIP = "10.$TeamNumber.1.1";
+
 $IpAddress = (Get-NetIPAddress |Where-Object {$_.AddressState -eq 'Preferred' -and $_.ValidLifetime -lt '24:00:00'}).IPAddress
 
 netsh advfirewal export "C:\Firewall.wfw"
@@ -56,7 +54,7 @@ if(-not(Get-Command -Name New-NetFirewallRule -ErrorAction SilentlyContinue) -or
 
     netsh advfirewall set allprofiles state on
 }
-
+/
 else{
    if(Get-ScheduledTask -TaskName "FWRevert" -ErrorAction SilentlyContinue){
 
@@ -88,31 +86,31 @@ else{
 
     New-NetFirewallRule -DisplayName "WinRM" -Direction Inbound -Protocol TCP -LocalPort 80,5985,5986 -RemoteAddress $Dispatcher
     New-NetFirewallRule -DisplayName "Datadog" -Direction Outbound  -Program "C:\Program Files\Datadog Agent\bin\agent.exe"
-    New-NetFirewallRule  -DisplayName "Remote Desktop" -Direction Inbound -Protocol TCP -LocalPort 3389 -RemoteAddress $JumpIP
+    #New-NetFirewallRule  -DisplayName "Remote Desktop" -Direction Inbound -Protocol TCP -LocalPort 3389 -RemoteAddress $JumpIP
 
 
 
     # Domain Controller
-    if($IpAddress -eq "10.$TeamNumber.1.1"){
-        New-NetFirewallRule -DisplayName "Local10DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe" -RemoteAddress "10.$TeamNumber.1.0/24"
-        New-NetFirewallRule -DisplayName "Local192DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe" -RemoteAddress "192.168.$TeamNumber.0/24"
+    if($IpAddress -eq "10.7.1.1"){
+        New-NetFirewallRule -DisplayName "Local10DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe" -RemoteAddress "10.7.1.0/24"
+        New-NetFirewallRule -DisplayName "Local192DNS" -Direction Inbound -Protocol TCP -LocalPort 53 -Program "C:\Windows\System32\dns.exe" -RemoteAddress "192.168.7.0/24"
        
     }
 
     # HTTPS server
-    if($IpAddress -eq "10.$TeamNumber.1.2"){
+    if($IpAddress -eq "10.7.1.2"){
         New-NetFirewallRule -DisplayName "HTTPS" -Direction Inbound -Protocol TCP -LocalPort 443 -Program "C:\nginx\nginx.exe"
        
     }
     
     # WINRM Box
-    if($IpAddress -eq "10.$TeamNumber.1.3"){
+    if($IpAddress -eq "10.7.1.3"){
         New-NetFirewallRule -DisplayName "WinRM" -Direction Inbound -Protocol TCP -LocalPort 80,5985,5986
         
     }
 
 
-    if($IpAddress -eq "192.168.$TeamNumber.1"){
+    if($IpAddress -eq "192.168.7.1"){
         New-NetFirewallRule -DisplayName "HTTP" -Direction Inbound -Protocol TCP -LocalPort 80
         
     }
